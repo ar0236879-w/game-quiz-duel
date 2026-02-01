@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Edu-Duel: Time Attack SMA/SMK</title>
+    
+    <!-- Fonts: Inter & Poppins untuk tampilan modern & profesional -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- RESET & VARIABLES --- */
+        :root {
+            --bg-dark: #0f172a;
+            --bg-panel: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            
+            --p1-color: #3b82f6; /* Blue */
+            --p1-dark: #1e40af;
+            --p2-color: #ef4444; /* Red */
+            --p2-dark: #991b1b;
+            
+            --success: #10b981;
+            --error: #ef4444;
+            
+            --font-display: 'Poppins', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none; /* Mencegah seleksi teks saat bermain */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height untuk mobile */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- TYPOGRAPHY & UTILITIES --- */
+        .hidden { display: none !important; }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .full-screen { position: absolute; inset: 0; z-index: 100; }
+
+        /* --- BRANDING STYLES (Global) --- */
+        .branding-box {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            text-align: right;
+            line-height: 1.2;
+        }
+        
+        .branding-creator {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+        }
+
+        .branding-ig {
+            font-size: 0.65rem;
+            color: #60a5fa; /* Light Blue for IG */
+            text-decoration: none;
+            font-family: var(--font-display);
+        }
+
+        /* --- MENU SCREEN --- */
+        #menu-screen {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            flex-direction: column;
+            padding: 2rem;
+            text-align: center;
+            z-index: 50;
+            position: relative;
+        }
+
+        h1.logo {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            background: linear-gradient(to right, #60a5fa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .rules-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: left;
+            margin-bottom: 2rem;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        
+        .rules-card ul { padding-left: 1.2rem; margin-top: 0.5rem; }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--p1-dark), var(--p2-dark));
+            border: none;
+            color: white;
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            font-family: var(--font-display);
+            font-weight: 700;
+            border-radius: 50px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: transform 0.1s;
+            text-transform: uppercase;
+        }
+        
+        .btn-primary:active { transform: scale(0.95); }
+
+        /* --- GAME SCREEN --- */
+        #game-screen {
+            display: grid;
+            grid-template-rows: 60px 1fr auto;
+            height: 100%;
+        }
+
+        /* Header / Timer */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1rem;
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .timer-badge {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #fbbf24; /* Amber */
+            background: rgba(251, 191, 36, 0.1);
+            padding: 4px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        /* Question Area (Middle) */
+        .question-area {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 1.5rem;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            position: relative;
+        }
+
+        .subject-tag {
+            align-self: center;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            padding: 4px 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+
+        .question-text {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            text-align: center;
+            line-height: 1.4;
+            font-weight: 600;
+        }
+
+        /* Progress Bar for Question Timer */
+        .q-timer-bar-bg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .q-timer-bar-fill {
+            height: 100%;
+            background: #f472b6;
+            width: 100%;
+            transition: width 0.1s linear;
+        }
+
+        /* Split Controls (Bottom) */
+        .controls-split {
+            display: flex;
+            height: 100%;
+            background: var(--bg-dark);
+        }
+
+        .player-zone {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            gap: 0.8rem;
+            position: relative;
+        }
+
+        .player-zone.p1 { border-right: 1px solid rgba(255,255,255,0.05); }
+        .player-zone.p2 { }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 0.5rem;
+        }
+
+        .player-name {
+            font-weight: 700;
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+        }
+        
+        .p1 .player-name { color: var(--p1-color); }
+        .p2 .player-name { color: var(--p2-color); }
+
+        .player-score {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* Answer Grid */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+            flex-grow: 1;
+        }
+
+        .option-btn {
+            background: var(--bg-panel);
+            border: 2px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Feedback States */
+        .option-btn.locked { opacity: 0.6; cursor: default; }
+        .option-btn.correct { background: var(--success) !important; border-color: var(--success) !important; color: white; }
+        .option-btn.wrong { background: var(--error) !important; border-color: var(--error) !important; color: white; }
+        
+        /* Animations */
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .anim-correct { animation: pulse-green 0.5s ease-out; }
+        .anim-wrong { animation: shake 0.3s ease-in-out; }
+
+        /* --- RESULT SCREEN --- */
+        #result-screen {
+            background: var(--bg-dark);
+            z-index: 60;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .winner-display {
+            font-size: 2rem;
+            font-family: var(--font-display);
+            margin: 1.5rem 0;
+            color: #fbbf24;
+        }
+
+        .score-board {
+            display: flex;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .final-score {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .fs-label { font-size: 0.9rem; color: var(--text-muted); }
+        .fs-value { font-size: 2.5rem; font-weight: 800; font-family: var(--font-display); }
+        .fs-p1 { color: var(--p1-color); }
+        .fs-p2 { color: var(--p2-color); }
+
+        /* Footer Credits Shared */
+        .footer-credits {
+            position: absolute;
+            bottom: 1rem;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- --- MENU SCREEN --- -->
+    <section id="menu-screen" class="flex-center full-screen">
+        <div style="position: absolute; top: 1rem; left: 1rem; opacity: 0.5;">
+            <!-- Optional small logo or space -->
+        </div>
+        <div style="position: absolute; top: 1rem; right: 1rem;">
+             <!-- Branding Top Right Menu -->
+             <div class="branding-box">
+                <span class="branding-creator">Reski Ardiansyah</span>
+                <a href="https://instagram.com/ikky05__" class="branding-ig" target="_blank">@ikky05__</a>
+            </div>
+        </div>
+
+        <h1 class="logo">Duel SMA</h1>
+        <div class="subtitle">Time Attack Edu-Quiz</div>
+
+        <div class="rules-card">
+            <strong>Peraturan Duel:</strong>
+            <ul>
+                <li>Waktu Global: 5 Menit.</li>
+                <li>Player 1 (Biru) vs Player 2 (Merah).</li>
+                <li>Soal acak dari berbagai mapel SMA/SMK.</li>
+                <li>Jawab paling cepat & benar untuk menang.</li>
+                <li>Opsi diacak setiap kali soal muncul.</li>
+            </ul>
+        </div>
+
+        <button class="btn-primary" onclick="Game.init()">Mulai Duel</button>
+
+        <!-- Branding Bottom Menu -->
+        <div class="footer-credits">
+            <span style="font-size:0.7rem; opacity:0.5;">Game Creator</span>
+        </div>
+    </section>
+
+    <!-- --- GAME SCREEN --- -->
+    <section id="game-screen" class="hidden">
+        <header class="game-header">
+            <!-- Branding Header Game (Left) -->
+            <div class="branding-box">
+                <span class="branding-creator">Reski Ardiansyah</span>
+                <a href="https://instagram.com/ikky05__" class="branding-ig" target="_blank">@ikky05__</a>
+            </div>
+            
+            <div class="timer-badge" id="global-timer">05:00</div>
+            
+            <div style="font-size:0.8rem; font-weight:600; opacity:0.7">VS</div>
+        </header>
+
+        <main class="question-area">
+            <div class="subject-tag" id="q-subject">Matematika</div>
+            <div class="question-text" id="q-text">Loading question...</div>
+            
+            <div class="q-timer-bar-bg">
+                <div class="q-timer-bar-fill" id="q-timer-bar"></div>
+            </div>
+        </main>
+
+        <div class="controls-split">
+            <!-- Player 1 Zone -->
+            <div class="player-zone p1" id="p1-zone">
+                <div class="player-header">
+                    <span class="player-name">PLAYER 1</span>
+                    <span class="player-score" id="p1-score">0</span>
+                </div>
+                <div class="options-grid" id="p1-options">
+                    <!-- Buttons injected via JS -->
+                </div>
+            </div>
+
+            <!-- Player 2 Zone -->
+            <div class="player-zone p2" id="p2-zone">
+                <div class="player-header">
+                    <span class="player-name">PLAYER 2</span>
+                    <span class="player-score" id="p2-score">0</span>
+                </div>
+                <div class="options-grid" id="p2-options">
+                    <!-- Buttons injected via JS -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- --- RESULT SCREEN --- -->
+    <section id="result-screen" class="hidden flex-center full-screen">
+        <h2 style="font-size: 1.5rem; text-transform: uppercase; letter-spacing: 2px;">Hasil Duel</h2>
+        
+        <div class="winner-display" id="winner-text">DRAW</div>
+        
+        <div class="score-board">
+            <div class="final-score">
+                <span class="fs-label">PLAYER 1</span>
+                <span class="fs-value fs-p1" id="end-p1-score">0</span>
+            </div>
+            <div class="final-score">
+                <span class="fs-label">PLAYER 2</span>
+                <span class="fs-value fs-p2" id="end-p2-score">0</span>
+            </div>
+        </div>
+
+        <button class="btn-primary" onclick="Game.init()">Main Lagi</button>
+
+        <div class="footer-credits">
+            <span class="branding-creator" style="margin-bottom:4px; color:white;">Reski Ardiansyah</span>
+            <a href="https://instagram.com/ikky05__" class="branding-ig" target="_blank">@ikky05__</a>
+        </div>
+    </section>
+
+    <script>
+        /**
+         * DATABASE & DATA STRUCTURE
+         * Mensimulasikan database relasional dengan array of objects.
+         * Struktur: id, subject, question_text, options [], correct_answer_index.
+         */
+        
+        // Membuat Bank Soal (Sample Mix SMA/SMK Subjects)
+        // Untuk tujuan demo, kita buat 60 soal yang solid. Sistem ini mendukung 1000+ soal.
+        const RAW_QUESTIONS = [
+            // Matematika
+            { id: 1, subject: 'Matematika', q: 'Turunan pertama dari f(x) = 3x² + 2x adalah...', opts: ['6x + 2', '3x + 2', '6x', '3x + 1'], ans: 0 },
+            { id: 2, subject: 'Matematika', q: 'Nilai dari sin² 30° + cos² 30° adalah...', opts: ['0', '1', '1/2', '2'], ans: 1 },
+            { id: 3, subject: 'Matematika', q: 'Akar-akar persamaan x² - 5x + 6 = 0 adalah...', opts: ['1 dan 6', '2 dan 3', '-2 dan -3', '1 dan 5'], ans: 1 },
+            { id: 4, subject: 'Matematika', q: 'Bentuk sederhana dari 2√3 + 3√3 adalah...', opts: ['5√3', '6√3', '5√6', '√3'], ans: 0 },
+            { id: 5, subject: 'Matematika', q: 'Deret geometri 2, 4, 8, ..., suku ke-5 adalah...', opts: ['16', '32', '64', '128'], ans: 1 },
+            { id: 6, subject: 'Matematika', q: 'Rumus volume kerucut adalah...', opts: ['1/3 πr²t', 'πr²t', '4/3 πr³', '2πr'], ans: 0 },
+            { id: 7, subject: 'Matematika', q: 'Limit fungsi (2x+3) saat x mendekati 2 adalah...', opts: ['5', '7', '6', '9'], ans: 1 },
+            { id: 8, subject: 'Matematika', q: 'Himpunan penyelesaian |x - 2| < 3 adalah...', opts: ['{x | -5 < x < 1}', '{x | x < -5 atau x > 1}', '{x | -1 < x < 5}', '{x | -1 < x < 1}'], ans: 2 },
+            { id: 9, subject: 'Matematika', q: 'Sudut pusat keliling 240° memiliki panjang busur 44 cm. Jari-jarinya?', opts: ['21 cm', '10.5 cm', '14 cm', '7 cm'], ans: 1 }, // π=22/7
+            { id: 10, subject: 'Matematika', q: 'Matriks identitas ordo 2x2 adalah...', opts: ['[[0,0],[0,0]]', '[[1,0],[0,1]]', '[[1,1],[1,1]]', '[[0,1],[1,0]]'], ans: 1 },
+            
+            // Fisika
+            { id: 11, subject: 'Fisika', q: 'Satuan SI untuk Daya adalah...', opts: ['Joule', 'Watt', 'Newton', 'Pascal'], ans: 1 },
+            { id: 12, subject: 'Fisika', q: 'Energi yang dimiliki benda karena posisinya disebut...', opts: ['Energi Kinetik', 'Energi Potensial', 'Energi Mekanik', 'Energi Kalor'], ans: 1 },
+            { id: 13, subject: 'Fisika', q: 'Hukum II Newton menyatakan bahwa F = ...', opts: ['m.a', 'm.v', 'm.g', '1/2 m.v²'], ans: 0 },
+            { id: 14, subject: 'Fisika', q: 'Cepat rambat bunyi di udara kira-kira sebesar...', opts: ['340 m/s', '300 m/s', '500 m/s', '150 m/s'], ans: 0 },
+            { id: 15, subject: 'Fisika', q: 'Alat untuk mengukur tegangan listrik adalah...', opts: ['Amperemeter', 'Voltmeter', 'Ohmmeter', 'Termometer'], ans: 1 },
+            { id: 16, subject: 'Fisika', q: 'Benda bergerak lurus beraturan memiliki percepatan sebesar...', opts: ['Tetap', 'Nol', 'Berubah', 'Maksimum'], ans: 1 },
+            { id: 17, subject: 'Fisika', q: 'Partikel atom yang bermuatan negatif adalah...', opts: ['Proton', 'Neutron', 'Elektron', 'Foton'], ans: 2 },
+            { id: 18, subject: 'Fisika', q: 'Rumus energi potensial pegas adalah...', opts: ['Ep = mgh', 'Ep = 1/2 kx²', 'Ep = 1/2 mv²', 'Ep = F.s'], ans: 1 },
+            { id: 19, subject: 'Fisika', q: 'Zat padat yang memiliki susunan atom tidak teratur disebut...', opts: ['Kristal', 'Amorf', 'Isotrop', 'Anisotrop'], ans: 1 },
+            { id: 20, subject: 'Fisika', q: 'Prinsip kerja termos menggunakan konsep...', opts: ['Konduksi', 'Konveksi', 'Radiasi', 'Semua Benar'], ans: 3 },
+
+            // Kimia
+            { id: 21, subject: 'Kimia', q: 'Lambang unsur tembaga adalah...', opts: ['Ti', 'Te', 'Cu', 'Fe'], ans: 2 },
+            { id: 22, subject: 'Kimia', q: 'Zat paling sederhana yang belum dapat diuraikan lagi adalah...', opts: ['Molekul', 'Atom', 'Campuran', 'Senyawa'], ans: 1 },
+            { id: 23, subject: 'Kimia', q: 'Reaksi penggabungan dua atom gas hidrogen membentuk gas oksigen adalah...', opts: ['H2 + O2 -> H2O', '2H2 + O2 -> 2H2O', '2H + O -> H2O', 'H2O -> H2 + O2'], ans: 1 }, // Trick: 2H2 + O2
+            { id: 24, subject: 'Kimia', q: 'Tabel periodik disusun berdasarkan...', opts: ['Massa atom', 'Nomor atom', 'Jumlah neutron', 'Elektron valensi'], ans: 1 },
+            { id: 25, subject: 'Kimia', q: 'Senyawa ion terbentuk karena...', opts: ['Transfer elektron', 'Berbagi elektron', 'Pembentukan molekul', 'Perbedaan warna'], ans: 0 },
+            { id: 26, subject: 'Kimia', q: 'Larutan yang bersifat asam memiliki pH...', opts: ['> 7', '= 7', '< 7', 'Tidak tentu'], ans: 2 },
+            { id: 27, subject: 'Kimia', q: 'Nomor atom Karbon (C) adalah...', opts: ['4', '6', '12', '14'], ans: 1 },
+            { id: 28, subject: 'Kimia', q: 'Campuran homogen yang terdiri dari dua fase atau lebih disebut...', opts: ['Koloid', 'Suspensi', 'Elemen', 'Senyawa'], ans: 0 },
+            { id: 29, subject: 'Kimia', q: 'Golongan IA pada tabel periodik disebut...', opts: ['Alkali', 'Alkali Tanah', 'Halogen', 'Gas Mulia'], ans: 0 },
+            { id: 30, subject: 'Kimia', q: 'Reaksi yang melepaskan kalor disebut...', opts: ['Endoterm', 'Eksoterm', 'Netral', 'Katalis'], ans: 1 },
+
+            // Biologi
+            { id: 31, subject: 'Biologi', q: 'Organel sel yang berfungsi sebagai tempat respirasi sel adalah...', opts: ['Kloroplas', 'Mitokondria', 'Ribosom', 'Lisosom'], ans: 1 },
+            { id: 32, subject: 'Biologi', q: 'Tumbuhan hijau dapat membuat makanan sendiri melalui proses...', opts: ['Respirasi', 'Fotosintesis', 'Fermentasi', 'Digesti'], ans: 1 },
+            { id: 33, subject: 'Biologi', q: 'Bagian bunga yang bertugas sebagai alat kelamin jantan adalah...', opts: ['Putik', 'Benang Sari', 'Mahkota', 'Kelopak'], ans: 1 },
+            { id: 34, subject: 'Biologi', q: 'Daratan yang luas dan didominasi pepohonan lebat disebut...', opts: ['Savanna', 'Hutan Hujan Tropis', 'Tundra', 'Gurun'], ans: 1 },
+            { id: 35, subject: 'Biologi', q: 'Mikroorganisme yang hanya dapat hidup dengan oksigen disebut...', opts: ['Anaerob', 'Aerob', 'Parasit', 'Saprofit'], ans: 1 },
+            { id: 36, subject: 'Biologi', q: 'DNA disusun oleh rantai polimer...', opts: ['Asam Nukleat', 'Asam Amino', 'Karbohidrat', 'Lemak'], ans: 0 },
+            { id: 37, subject: 'Biologi', q: 'Sistem pencernaan makanan dimulai dari...', opts: ['Kerongkongan', 'Lambung', 'Mulut', 'Usus'], ans: 2 },
+            { id: 38, subject: 'Biologi', q: 'Hewan memamah biak termasuk golongan...', opts: ['Karnivora', 'Herbivora', 'Omnivora', 'Insektivora'], ans: 1 },
+            { id: 39, subject: 'Biologi', q: 'Jantung manusia terdiri dari...', opts: ['2 Ruang', '4 Ruang', '3 Ruang', '5 Ruang'], ans: 1 },
+            { id: 40, subject: 'Biologi', q: 'Peredaran darah yang melalui paru-paru disebut...', opts: ['Peredaran Kecil', 'Peredaran Besar', 'Jantung', 'Aorta'], ans: 0 },
+
+            // Bahasa Indonesia
+            { id: 41, subject: 'B. Indonesia', q: 'Kalimat yang mengandung perintah disebut...', opts: ['Deklaratif', 'Interogatif', 'Imperatif', 'Persuasif'], ans: 2 },
+            { id: 42, subject: 'B. Indonesia', q: 'Ganti nama orang untuk orang pertama jamak adalah...', opts: ['Saya', 'Kami', 'Kamu', 'Mereka'], ans: 1 },
+            { id: 43, subject: 'B. Indonesia', q: 'Ide pokok dalam sebuah paragraf disebut...', opts: ['Kalimat Utama', 'Kalimat Penjelas', 'Kesimpulan', 'Simpulan'], ans: 0 },
+            { id: 44, subject: 'B. Indonesia', q: 'Majas perbandingan yang menggunakan kata "bagai" disebut...', opts: ['Personifikasi', 'Simile', 'Metafora', 'Hiperbola'], ans: 1 },
+            { id: 45, subject: 'B. Indonesia', q: 'Teks yang berisi fakta dan kejadian penting adalah...', opts: ['Teks Prosedur', 'Teks Berita', 'Teks Laporan', 'Teks Negosiasi'], ans: 1 },
+            { id: 46, subject: 'B. Indonesia', q: 'Kata baku dari "apresilasi" adalah...', opts: ['Apresiasi', 'Apresilasi', 'Apreseai', 'Apresyas'], ans: 0 },
+            { id: 47, subject: 'B. Indonesia', q: 'Bagian awal teks drama disebut...', opts: ['Dialog', 'Epilog', 'Prolog', 'Konflik'], ans: 2 },
+            { id: 48, subject: 'B. Indonesia', q: 'Persamaan kata (sinonim) dari "Rajin" adalah...', opts: ['Malas', 'Tekun', 'Bodoh', 'Cerdas'], ans: 1 },
+            { id: 49, subject: 'B. Indonesia', q: 'Tanda baca yang digunakan untuk memisahkan kalimat setara adalah...', opts: ['Titik (.)', 'Koma (,)', 'Titik Koma (;)', 'Tanda Tanya (?)'], ans: 2 },
+            { id: 50, subject: 'B. Indonesia', q: 'Unsur intrinsik cerpen yang meliputi latar tempat dan waktu adalah...', opts: ['Tema', 'Tokoh', 'Alur', 'Latar'], ans: 3 },
+
+            // Bahasa Inggris
+            { id: 51, subject: 'B. Inggris', q: 'Change "She writes a letter" into passive!', opts: ['A letter is written by her', 'A letter was written by her', 'A letter written by her', 'She is written a letter'], ans: 0 },
+            { id: 52, subject: 'B. Inggris', q: 'I have been living here ... 2010.', opts: ['for', 'since', 'in', 'at'], ans: 1 },
+            { id: 53, subject: 'B. Inggris', q: 'The synonym of "Happy" is...', opts: ['Sad', 'Glad', 'Angry', 'Cry'], ans: 1 },
+            { id: 54, subject: 'B. Inggris', q: 'She ... to school every morning.', opts: ['go', 'goes', 'going', 'gone'], ans: 1 },
+            { id: 55, subject: 'B. Inggris', q: 'What is the past tense of "Buy"?', opts: ['Bought', 'Brought', 'Buying', 'Buyed'], ans: 0 },
+            { id: 56, subject: 'B. Inggris', q: 'A place where we see sick people is...', opts: ['School', 'Market', 'Hospital', 'Bank'], ans: 2 },
+            { id: 57, subject: 'B. Inggris', q: 'Animal that has a long trunk is...', opts: ['Lion', 'Elephant', 'Giraffe', 'Tiger'], ans: 1 },
+            { id: 58, subject: 'B. Inggris', q: 'Translate "Terima kasih" to English!', opts: ['Please', 'Sorry', 'Thank you', 'Welcome'], ans: 2 },
+            { id: 59, subject: 'B. Inggris', q: 'Yesterday I ... a movie.', opts: ['watch', 'watched', 'watching', 'watches'], ans: 1 },
+            { id: 60, subject: 'B. Inggris', q: 'Which one is a fruit?', opts: ['Carrot', 'Spinach', 'Apple', 'Potato'], ans: 2 }
+        ];
+
+        /**
+         * GAME LOGIC ENGINE
+         */
+        const Game = {
+            duration: 300, // 5 minutes in seconds
+            questionTime: 10, // 10 seconds per question
+            timer: null,
+            qTimer: null,
+            timeLeft: 300,
+            qTimeLeft: 10,
+            
+            sessionQuestions: [], // Array of shuffled questions for this session
+            currentQIndex: 0,
+            currentQData: null,
+            
+            scores: { p1: 0, p2: 0 },
+            answered: { p1: false, p2: false },
+            
+            // Elements
+            screens: {
+                menu: document.getElementById('menu-screen'),
+                game: document.getElementById('game-screen'),
+                result: document.getElementById('result-screen')
+            },
+            ui: {
+                globalTimer: document.getElementById('global-timer'),
+                qSubject: document.getElementById('q-subject'),
+                qText: document.getElementById('q-text'),
+                qTimerBar: document.getElementById('q-timer-bar'),
+                p1Score: document.getElementById('p1-score'),
+                p2Score: document.getElementById('p2-score'),
+                p1Opts: document.getElementById('p1-options'),
+                p2Opts: document.getElementById('p2-options'),
+                winnerText: document.getElementById('winner-text'),
+                endP1Score: document.getElementById('end-p1-score'),
+                endP2Score: document.getElementById('end-p2-score')
+            },
+
+            // --- UTILS ---
+            shuffleArray: (array) => {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            },
+
+            formatTime: (seconds) => {
+                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const s = (seconds % 60).toString().padStart(2, '0');
+                return `${m}:${s}`;
+            },
+
+            // --- CORE FUNCTIONS ---
+            init: () => {
+                // Reset State
+                Game.timeLeft = Game.duration;
+                Game.scores = { p1: 0, p2: 0 };
+                Game.currentQIndex = 0;
+                Game.answered = { p1: false, p2: false };
+                
+                // Randomize Session: Shuffle raw questions deeply to ensure randomness
+                // Note: In a real DB, we would select IDs. Here we clone objects.
+                const shuffledRaw = Game.shuffleArray([...RAW_QUESTIONS]);
+                Game.sessionQuestions = shuffledRaw;
+
+                // UI Reset
+                Game.switchScreen('game');
+                Game.updateScoreUI();
+                
+                // Start Loop
+                Game.startTimer();
+                Game.loadQuestion();
+            },
+
+            switchScreen: (screenName) => {
+                Object.values(Game.screens).forEach(el => el.classList.add('hidden'));
+                Game.screens[screenName].classList.remove('hidden');
+            },
+
+            startTimer: () => {
+                clearInterval(Game.timer);
+                Game.timer = setInterval(() => {
+                    Game.timeLeft--;
+                    Game.ui.globalTimer.innerText = Game.formatTime(Game.timeLeft);
+                    if (Game.timeLeft <= 0) {
+                        Game.endGame();
+                    }
+                }, 1000);
+            },
+
+            startQuestionTimer: () => {
+                clearInterval(Game.qTimer);
+                Game.qTimeLeft = Game.questionTime;
+                Game.ui.qTimerBar.style.width = '100%';
+                
+                // Reset answered state for new question
+                Game.answered = { p1: false, p2: false };
+
+                Game.qTimer = setInterval(() => {
+                    Game.qTimeLeft -= 0.1; // Smooth update
+                    const percentage = (Game.qTimeLeft / Game.questionTime) * 100;
+                    Game.ui.qTimerBar.style.width = `${percentage}%`;
+
+                    if (Game.qTimeLeft <= 0) {
+                        clearInterval(Game.qTimer);
+                        Game.handleTimeout();
+                    }
+                }, 100);
+            },
+
+            loadQuestion: () => {
+                if (Game.currentQIndex >= Game.sessionQuestions.length) {
+                    // Loop if questions run out before time
+                    Game.currentQIndex = 0; 
+                }
+
+                const q = Game.sessionQuestions[Game.currentQIndex];
+                Game.currentQData = q;
+
+                // Render Text
+                Game.ui.qSubject.innerText = q.subject;
+                Game.ui.qText.innerText = q.q;
+
+                // Shuffle Options for THIS view
+                // We must track which option is correct AFTER shuffle
+                // q.ans is index in original q.opts
+                const originalOpts = [...q.opts];
+                const correctOptText = originalOpts[q.ans];
+                
+                const shuffledOpts = Game.shuffleArray(originalOpts);
+                const newCorrectIndex = shuffledOpts.indexOf(correctOptText);
+
+                // Render Buttons for P1 and P2 (Same options for fairness)
+                Game.renderButtons(Game.ui.p1Opts, shuffledOpts, newCorrectIndex, 'p1');
+                Game.renderButtons(Game.ui.p2Opts, shuffledOpts, newCorrectIndex, 'p2');
+
+                Game.startQuestionTimer();
+            },
+
+            renderButtons: (container, options, correctIdx, player) => {
+                container.innerHTML = '';
+                options.forEach((optText, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.innerText = optText;
+                    // Identify if this button is the correct one
+                    if (idx === correctIdx) btn.dataset.isCorrect = "true";
+                    
+                    btn.onclick = () => Game.handleAnswer(player, idx, btn);
+                    container.appendChild(btn);
+                });
+            },
+
+            handleAnswer: (player, selectedIdx, btnElement) => {
+                if (Game.answered[player]) return; // Prevent double tap
+                
+                Game.answered[player] = true;
+
+                const isCorrect = btnElement.dataset.isCorrect === "true";
+                const zone = document.getElementById(player === 'p1' ? 'p1-zone' : 'p2-zone');
+
+                // Visual Feedback
+                if (isCorrect) {
+                    btnElement.classList.add('correct');
+                    btnElement.classList.add('anim-correct');
+                    Game.scores[player]++;
+                } else {
+                    btnElement.classList.add('wrong');
+                    btnElement.classList.add('anim-wrong');
+                    // Vibration
+                    if (navigator.vibrate) navigator.vibrate(200);
+                }
+
+                Game.updateScoreUI();
+                
+                // Check if both answered
+                if (Game.answered.p1 && Game.answered.p2) {
+                    clearInterval(Game.qTimer);
+                    setTimeout(Game.nextQuestion, 1000); // Small delay to see result
+                } else {
+                    // Lock this player's buttons
+                    const allBtns = zone.querySelectorAll('.option-btn');
+                    allBtns.forEach(b => {
+                        if (b !== btnElement) b.classList.add('locked');
+                    });
+                }
+            },
+
+            handleTimeout: () => {
+                // If timeout, force both to be "ready" but no points (or auto-fail)
+                // The prompt says: "Soal berganti otomatis setelah... Batas waktu soal tercapai"
+                Game.nextQuestion();
+            },
+
+            nextQuestion: () => {
+                Game.currentQIndex++;
+                Game.loadQuestion();
+            },
+
+            updateScoreUI: () => {
+                Game.ui.p1Score.innerText = Game.scores.p1;
+                Game.ui.p2Score.innerText = Game.scores.p2;
+            },
+
+            endGame: () => {
+                clearInterval(Game.timer);
+                clearInterval(Game.qTimer);
+                
+                const p1 = Game.scores.p1;
+                const p2 = Game.scores.p2;
+                
+                Game.ui.endP1Score.innerText = p1;
+                Game.ui.endP2Score.innerText = p2;
+
+                let winnerText = "";
+                if (p1 > p2) winnerText = "PLAYER 1 MENANG!";
+                else if (p2 > p1) winnerText = "PLAYER 2 MENANG!";
+                else winnerText = "SERI (DRAW)!";
+
+                Game.ui.winnerText.innerText = winnerText;
+                Game.switchScreen('result');
+            }
+        };
+
+        // Prevent accidental zoom on double tap for buttons
+        document.addEventListener('dblclick', function(event) {
+            event.preventDefault();
+        }, { passive: false });
+
+    </script>
+</body>
+</html>
